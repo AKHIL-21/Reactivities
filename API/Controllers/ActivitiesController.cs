@@ -1,5 +1,6 @@
 using System;
 using Domain;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
@@ -9,21 +10,33 @@ namespace API.Controllers;
 
 public class ActivitiesController : BaseApiController
 {
-    private readonly AppDbContext _context;
-    public ActivitiesController(AppDbContext context)
+
+
+    [HttpGet]
+    public async Task<ActionResult<List<Activity>>> GetActivities()
     {
-        this._context = context;
+        return await Mediator.Send(new Application.Activities.Queries.GetActivityList.Query());
     }
-   [HttpGet]
-   public async Task<ActionResult<List<Activity>>>  GetActivities()
-    {
-        return await _context.Activities.ToListAsync();
-    }
-    [HttpGet ("{id}")]
+    [HttpGet("{id}")]
     public async Task<ActionResult<Activity>> GetActivityDetail(string id)
     {
-        var activity = await _context.Activities.FindAsync(id);
-        if(activity ==null) return NotFound();
-        return activity;
+        return await Mediator.Send(new Application.Activities.Queries.GetActivityDetails.Query { Id = id });
+    }
+    [HttpPost]
+    public async Task<ActionResult<string>> CreateActivity(Activity activity)
+    {
+        return await Mediator.Send(new Application.Activities.Commands.CreateActivity.Command { Activity = activity });
+    }
+    [HttpPut]
+    public async Task<ActionResult> EditActivity( Activity activity)
+    {
+        await Mediator.Send(new Application.Activities.Commands.EditActivity.Command { Activity = activity });
+        return NoContent();
+    }
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> DeleteActivity(string id)
+    {
+        await Mediator.Send(new Application.Activities.Commands.DeleteActivity.Command { Id = id });
+        return Ok();
     }
 }
