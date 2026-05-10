@@ -1,12 +1,16 @@
 import { Box, Button, Paper, TextField, Typography } from "@mui/material";
-import type { FormEvent } from "react";
+import {  type FormEvent } from "react";
+import { useActivities } from "../../../lib/hooks/useActivities";
 type Props = {
   closeForm : () => void
+  onActivitySaved: (activity: Activity) => void
   activity? : Activity | undefined,
-    submitForm : (activity : Activity) => void
 }
-export default function ActivityForm({ closeForm, activity,submitForm }: Props) {
-    const handleSubmit = (event : FormEvent<HTMLFormElement>) => {
+export default function ActivityForm({ closeForm, onActivitySaved, activity }: Props) {
+const {updateActivity,createActivity} = useActivities();
+    const dateValue = activity?.date ? activity.date.split('T')[0] : '';
+
+    const handleSubmit =async (event : FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         // Handle form submission logic here
         const formData = new FormData(event.currentTarget);
@@ -15,9 +19,41 @@ export default function ActivityForm({ closeForm, activity,submitForm }: Props) 
             data[key] = value;
         });
         if(activity) {
-            data.id = activity.id;
+            const updatedActivity = {
+                ...activity,
+                ...data,
+                date: data.date
+                    ? new Date(`${data.date.toString()}T00:00:00`).toISOString()
+                    : activity.date,
+            };
+            try {
+                await updateActivity.mutateAsync(updatedActivity as Activity);
+                onActivitySaved(updatedActivity as Activity);
+            } catch (error) {
+                console.error(error);
+            }
         }
-        submitForm(data as unknown as Activity);
+        else{
+            const newActivity: Activity = {
+                id: crypto.randomUUID(),
+                title: data.title.toString(),
+                description: data.description.toString(),
+                category: data.category.toString(),
+                date: new Date(`${data.date.toString()}T00:00:00`).toISOString(),
+                city: data.city.toString(),
+                venue: data.venue.toString(),
+                isCancelled: false,
+                latitude: 0,
+                longitude: 0,
+            };
+            try {
+                await createActivity.mutateAsync(newActivity);
+                onActivitySaved(newActivity);
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
     }
     
   return (
@@ -26,17 +62,18 @@ export default function ActivityForm({ closeForm, activity,submitForm }: Props) 
         Create Activity
     </Typography>
     <Box component='form' onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} >
-    <TextField name="title" label="Title" defaultValue={activity?.title ?? ''}/>
-    <TextField name="description" label="Description" defaultValue={activity?.description ?? ''} fullWidth multiline rows={3} />      
-    <TextField name="category" label="Category" defaultValue={activity?.category ?? ''} />       
-    <TextField name="date" label="Date" type="date" defaultValue={activity?.date ?? ''} />       
-    <TextField name="city" label="City" defaultValue={activity?.city ?? ''} />       
-    <TextField name="venue" label="Venue" defaultValue={activity?.venue ?? ''} />       
+    <TextField name="title" label="Title" defaultValue={activity?.title ?? ''} required/>
+    <TextField name="description" label="Description" defaultValue={activity?.description ?? ''} fullWidth multiline rows={3} required/>      
+    <TextField name="category" label="Category" defaultValue={activity?.category ?? ''} required/>       
+    <TextField name="date" label="Date" type="date" defaultValue={dateValue} required slotProps={{ inputLabel: { shrink: true } }} />       
+    <TextField name="city" label="City" defaultValue={activity?.city ?? ''} required/>       
+    <TextField name="venue" label="Venue" defaultValue={activity?.venue ?? ''} required/>       
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }} >
             <Button color="inherit" onClick={closeForm}>
                 Cancel
             </Button>
-            <Button color="success" type="submit" variant="contained">
+            <Button color="success" type="submit" variant="contained"
+            disabled={updateActivity.isPending || createActivity.isPending}>
                 Submit
             </Button>
         </Box>
