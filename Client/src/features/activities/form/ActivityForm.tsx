@@ -1,13 +1,12 @@
 import { Box, Button, Paper, TextField, Typography } from "@mui/material";
 import {  type FormEvent } from "react";
 import { useActivities } from "../../../lib/hooks/useActivities";
-type Props = {
-  closeForm : () => void
-  onActivitySaved: (activity: Activity) => void
-  activity? : Activity | undefined,
-}
-export default function ActivityForm({ closeForm, onActivitySaved, activity }: Props) {
-const {updateActivity,createActivity} = useActivities();
+import { useNavigate, useParams } from "react-router";
+
+export default function ActivityForm() {
+const {id} = useParams();
+const {activity, updateActivity, createActivity,isLoadingActivity} = useActivities(id);
+const navigate = useNavigate();
     const dateValue = activity?.date ? activity.date.split('T')[0] : '';
 
     const handleSubmit =async (event : FormEvent<HTMLFormElement>) => {
@@ -28,7 +27,7 @@ const {updateActivity,createActivity} = useActivities();
             };
             try {
                 await updateActivity.mutateAsync(updatedActivity as Activity);
-                onActivitySaved(updatedActivity as Activity);
+                navigate(`/activities/${activity.id}`);
             } catch (error) {
                 console.error(error);
             }
@@ -47,19 +46,20 @@ const {updateActivity,createActivity} = useActivities();
                 longitude: 0,
             };
             try {
-                await createActivity.mutateAsync(newActivity);
-                onActivitySaved(newActivity);
+                const createdId = await createActivity.mutateAsync(newActivity);
+                navigate(`/activities/${createdId ?? newActivity.id}`);
             } catch (error) {
                 console.error(error);
             }
         }
-
     }
+
+    if(isLoadingActivity) return <h2>Loading...</h2>;
     
   return (
   <Paper sx={{ borderRadius :3 , padding: 3 }} >
     <Typography variant="h4" component="h2" color="primary" gutterBottom   >
-        Create Activity
+      {activity ? 'Edit Activity' : 'Create Activity'}
     </Typography>
     <Box component='form' onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }} >
     <TextField name="title" label="Title" defaultValue={activity?.title ?? ''} required/>
@@ -69,7 +69,7 @@ const {updateActivity,createActivity} = useActivities();
     <TextField name="city" label="City" defaultValue={activity?.city ?? ''} required/>       
     <TextField name="venue" label="Venue" defaultValue={activity?.venue ?? ''} required/>       
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }} >
-            <Button color="inherit" onClick={closeForm}>
+            <Button color="inherit" onClick={() => {}}>
                 Cancel
             </Button>
             <Button color="success" type="submit" variant="contained"
