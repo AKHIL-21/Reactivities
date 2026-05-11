@@ -1,5 +1,5 @@
 import ActivivtyDashboard from "../../features/activities/dashboard/ActivivtyDashboard";
-import ActivivtyDetails from "../../features/activities/details/ActivivtyDetails";
+import ActivivtyDetailPage from "../../features/activities/details/ActivivtyDetailPage";
 import ActivityForm from "../../features/activities/form/ActivityForm";
 import Homepage from "../../features/home/homepage";
 import App from "../layout/App";
@@ -18,7 +18,7 @@ export const routes = createBrowserRouter([
                 element : <ActivivtyDashboard />
             },{
                 path : 'activities/:id',
-                element : <ActivivtyDetails />
+                element : <ActivivtyDetailPage />
             },
             {
                 path : 'createActivity',
