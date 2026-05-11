@@ -1,6 +1,7 @@
 import ActivivtyDashboard from "../../features/activities/dashboard/ActivivtyDashboard";
 import ActivivtyDetailPage from "../../features/activities/details/ActivivtyDetailPage";
 import ActivityForm from "../../features/activities/form/ActivityForm";
+import Counter from "../../features/Counter/counter";
 import Homepage from "../../features/home/homepage";
 import App from "../layout/App";
 import { createBrowserRouter } from "react-router";
@@ -27,6 +28,10 @@ export const routes = createBrowserRouter([
             {
                 path : 'manage/:id',
                 element :<ActivityForm key="manage"/>
+            },
+            {
+                path : 'counter',
+                element :<Counter />
             }
 
         ]
