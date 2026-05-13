@@ -2,9 +2,12 @@ import ActivivtyDashboard from "../../features/activities/dashboard/ActivivtyDas
 import ActivivtyDetailPage from "../../features/activities/details/ActivivtyDetailPage";
 import ActivityForm from "../../features/activities/form/ActivityForm";
 import Counter from "../../features/Counter/counter";
+import Notfound from "../../features/errors/Notfound";
+import ServerError from "../../features/errors/ServerError";
+import TestErrors from "../../features/errors/TestErrors";
 import Homepage from "../../features/home/homepage";
 import App from "../layout/App";
-import { createBrowserRouter } from "react-router";
+import { createBrowserRouter, Navigate } from "react-router";
 export const routes = createBrowserRouter([
      {
         path : '/', 
@@ -32,9 +35,25 @@ export const routes = createBrowserRouter([
             {
                 path : 'counter',
                 element :<Counter />
-            }
+            },
+            {
+                path : 'errors',
+                element : <TestErrors />
+            },
+            {
+                path : 'not-found',
+                element : <Notfound />
+            },
+            {
+                path : 'server-error',
+                element : <ServerError />
+            },
+            {
+                path : '*',
+                element : <Navigate replace to ="/not-found" />
+            },
+            
 
         ]
      }
 ])  
-

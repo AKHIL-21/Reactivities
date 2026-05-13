@@ -1,26 +1,63 @@
 import axios from "axios";
 import { store } from "../stores/store";
-const sleep = (delay : number) => {
+import { toast } from "react-toastify";
+import { routes } from "../../app/router/Routes";
+const sleep = (delay: number) => {
   return new Promise((resolve) => {
     setTimeout(resolve, delay);
   });
 }
 const agent = axios.create({
-  baseURL :import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL,
 });
-agent.interceptors.request.use( async config => {
-store.uiStore.isbusy();
-return config;
+agent.interceptors.request.use(async config => {
+  store.uiStore.isbusy();
+  return config;
 });
-agent.interceptors.response.use( async response => {
- try {   
+agent.interceptors.response.use(
+  async response => {
+    await sleep(1000);
+    store.uiStore.isidle()
+    return response;
+  },
+  async error => {
     await sleep(1000);
     store.uiStore.isidle();
-    return response;    
- } catch (error) {
-   console.log(error);
-   return Promise.reject(error);
- }
-});
+    if (!error.response) {
+      toast.error('Network error');
+      return Promise.reject(error);
+    }
+
+    const { status, data } = error.response;
+    switch (status) {
+      case 400:
+          if(data.errors){
+            const modalStateErrors = [];
+            for (const key in data.errors){
+              if(data.errors[key]){
+                modalStateErrors.push(data.errors[key]);
+              }
+            }
+            throw modalStateErrors.flat();
+          }else{
+            toast.error(data);
+          }
+        break;
+      case 401:
+        toast.error('Unauthorised');
+        break;
+      case 404:
+        routes.navigate('/not-found');
+        break;
+      case 500:
+        routes.navigate('/server-error', { state: { error: data } });
+        break;
+      default:
+        break;
+    }
+    return Promise.reject(error);
+  }
+
+);
 
 export default agent;

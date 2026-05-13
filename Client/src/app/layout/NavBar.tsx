@@ -35,7 +35,10 @@ export default function NavBar() {
               </MenuItemLink>     
                <MenuItemLink  to="/counter">
                 Counter 
-              </MenuItemLink>      
+              </MenuItemLink>    
+               <MenuItemLink  to="/errors">
+                Errors 
+              </MenuItemLink>    
             </Box>
             <Button color="inherit" sx={{ fontSize: '1.2rem', fontWeight: 'bold', textTransform: 'uppercase' }}>
                usermenu

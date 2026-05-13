@@ -23,3 +23,4 @@ if(!activity || isLoadingActivity) return <h2>Loading...</h2>;
   </Grid>
 )
 }
+  
