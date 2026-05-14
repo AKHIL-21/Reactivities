@@ -10,18 +10,53 @@ public class Dbinitializer
 
 public static async Task SeedData (AppDbContext context, UserManager<User> userManager)
     {
-        if (!userManager.Users.Any())
+        var users = new List<User>
         {
-            var users = new List<User>
-            {
-                new User { DisplayName = "Bob", UserName = "bob@test.com", Email = "bob@test.com" },
-                new User { DisplayName = "Jane", UserName = "jane@test.com", Email = "jane@test.com" },
-                new User { DisplayName = "Tom", UserName = "tom@test.com", Email = "tom@test.com" }
-            };
+            new() { DisplayName = "Bob", UserName = "bob@test.com", Email = "bob@test.com" },
+            new() { DisplayName = "Jane", UserName = "jane@test.com", Email = "jane@test.com" },
+            new() { DisplayName = "Tom", UserName = "tom@test.com", Email = "tom@test.com" }
+        };
 
-            foreach (var user in users)
+        foreach (var user in users)
+        {
+            var existingUser = await userManager.FindByEmailAsync(user.Email!);
+
+            if (existingUser == null)
             {
-                await userManager.CreateAsync(user, "Pa$$w0rd");
+                var createResult = await userManager.CreateAsync(user, "Pa$$w0rd");
+                if (!createResult.Succeeded)
+                {
+                    throw new Exception(string.Join(", ", createResult.Errors.Select(x => x.Description)));
+                }
+
+                continue;
+            }
+
+            existingUser.UserName = user.Email;
+            existingUser.Email = user.Email;
+            existingUser.DisplayName = user.DisplayName;
+            var updateResult = await userManager.UpdateAsync(existingUser);
+            if (!updateResult.Succeeded)
+            {
+                throw new Exception(string.Join(", ", updateResult.Errors.Select(x => x.Description)));
+            }
+
+            if (!await userManager.CheckPasswordAsync(existingUser, "Pa$$w0rd"))
+            {
+                if (await userManager.HasPasswordAsync(existingUser))
+                {
+                    var removePasswordResult = await userManager.RemovePasswordAsync(existingUser);
+                    if (!removePasswordResult.Succeeded)
+                    {
+                        throw new Exception(string.Join(", ", removePasswordResult.Errors.Select(x => x.Description)));
+                    }
+                }
+
+                var addPasswordResult = await userManager.AddPasswordAsync(existingUser, "Pa$$w0rd");
+                if (!addPasswordResult.Succeeded)
+                {
+                    throw new Exception(string.Join(", ", addPasswordResult.Errors.Select(x => x.Description)));
+                }
             }
         }
         

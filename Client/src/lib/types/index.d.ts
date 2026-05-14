@@ -12,7 +12,12 @@ declare global {
       longitude: number
   }
 }
-
+type user ={
+  id: string
+  email : string
+  displayName : string
+  imageUrl : string
+}
 export type LocationIQSuggestion = {
   place_id: string
   osm_id: string

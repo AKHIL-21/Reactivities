@@ -1,7 +1,7 @@
 import { z } from 'zod';
+import { requiredString } from '../Util/util';
 
-const requiredString = (fieldName: string) =>
-    z.string().trim().min(1, { message: `${fieldName} is required` });
+
 
 const coordinateString = (fieldName: string, min: number, max: number) =>
     requiredString(fieldName).refine(value => {

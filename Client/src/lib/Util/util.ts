@@ -1,4 +1,5 @@
 import type { DateArg } from "date-fns";
+import z from "zod";
 
 export function formatDate(date: DateArg<Date>, formatString: string) {
     const options: Intl.DateTimeFormatOptions = {};
@@ -20,3 +21,5 @@ export function formatDate(date: DateArg<Date>, formatString: string) {
 
     return new Intl.DateTimeFormat('en-US', options).format(new Date(date));
 }
+export const requiredString = (fieldName: string) =>
+    z.string().trim().min(1, { message: `${fieldName} is required` });
